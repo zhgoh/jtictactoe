@@ -21,8 +21,8 @@ public class Game {
         // Main loop
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            if (hasWinner() || !hasMoves()) {
-                System.out.println("Game Ended");
+            if (isDraw()) {
+                System.out.println("It's a draw!!");
                 break;
             }
 
@@ -40,14 +40,18 @@ public class Game {
                     char first = input.charAt(0);
                     if (first >= 'A' && first <= 'C') {
                         char second = input.charAt(1);
-                        if (second >= '1' && second <= '3') {
+                        if (second >= '0' && second <= '2') {
                             // Valid moves
-                            int x = first - 'A';
-                            int y = second - '1';
+                            int col = first - 'A';
+                            int row = second - '0';
 
-                            if (setBoard(x, y, turn)) {
-                                switchTurn();
+                            if (placeOnBoard(col, row, turn)) {
                                 draw();
+                                if (hasWinner()) {
+                                    System.out.println(turn + " won!!!");
+                                    break;
+                                }
+                                switchTurn();
                             }
                         }
                     }
@@ -58,25 +62,25 @@ public class Game {
 
     void draw() {
         clearScreen();
-        System.out.println("    a     b     c");
+        System.out.println("    A     B     C");
         System.out.println("       |     |   ");
-        System.out.println("1   " + board[0] + "  |  " + board[1] + "  |  " + board[2]);
+        System.out.println("0   " + board[0] + "  |  " + board[1] + "  |  " + board[2]);
         System.out.println("  _____|_____|_____");
         System.out.println("       |     |");
-        System.out.println("2   " + board[3] + "  |  " + board[4] + "  |  " + board[5]);
+        System.out.println("1   " + board[3] + "  |  " + board[4] + "  |  " + board[5]);
         System.out.println("  _____|_____|_____");
         System.out.println("       |     |");
-        System.out.println("3   " + board[6] + "  |  " + board[7] + "  |  " + board[8]);
+        System.out.println("2   " + board[6] + "  |  " + board[7] + "  |  " + board[8]);
         System.out.println("       |     |");
     }
 
-    boolean isNotEmpty(int one) {
-        return board[one] != '-';
+    boolean isOccupied(int pos) {
+        return board[pos] != '-';
     }
 
-    boolean checkThree(int one, int two, int three) {
-        return isNotEmpty(one) && isNotEmpty(two) && isNotEmpty(three) &&
-                board[one] == board[two] && board[two] == board[three];
+    boolean checkThree(int first, int second, int third) {
+        return isOccupied(first) && isOccupied(second) && isOccupied(third) &&
+                board[first] == board[second] && board[second] == board[third];
     }
     boolean hasWinner() {
         // 3 Horizontal
@@ -96,13 +100,14 @@ public class Game {
         return horizontal || vertical || diagonal;
     }
 
-    boolean hasMoves() {
+    boolean isDraw() {
+        int spaces = 0;
         for (char c : board) {
             if (c == '-') {
-                return true;
+                ++spaces;
             }
         }
-        return false;
+        return spaces == 0;
     }
 
     void switchTurn() {
@@ -118,13 +123,16 @@ public class Game {
         System.out.flush();
     }
 
-    boolean setBoard(int x, int y, TURN turn) {
-        if (board[y * 3 + x] != '-') {
+    boolean placeOnBoard(int col, int row, TURN turn) {
+        final int pos = row * 3 + col;
+
+        if (isOccupied(pos)) {
             return false;
         }
+
         switch (turn) {
-            case O -> board[y * 3 + x] = 'O';
-            case X -> board[y * 3 + x] = 'X';
+            case O -> board[pos] = 'O';
+            case X -> board[pos] = 'X';
         }
         return true;
     }
